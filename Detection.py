@@ -121,6 +121,6 @@ class Detection:
             self.load()
         print(f'******* predict() called, input X.shape = {X.shape}.')
         img = os.path.abspath('./boats.png')
-        prediction = detect(open(img, "rb").read(), self._model, self._stride, self._imgsz)
+        prediction = detect(X, self._model, self._stride, self._imgsz)
         # prediction = detect(open(img, "rb").read(), self._model, self._stride, self._imgsz)
         return prediction

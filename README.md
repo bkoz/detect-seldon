@@ -3,6 +3,12 @@ Deploy a custom model using OpenShift s2i and Seldon.
 
 ## Steps
 
+Correct prediction for boats.png test image.
+
+```
+{'objects': [{'box': [542.0, 405.0, 612.0, 470.0], 'confidence': 0.8979573845863342, 'class': 'boats'}, {'box': [730.0, 250.0, 806.0, 311.0], 'confidence': 0.8895076513290405, 'class': 'boats'}, {'box': [710.0, 631.0, 793.0, 653.0], 'confidence': 0.8804119825363159, 'class': 'boats'}, {'box': [1066.0, 344.0, 1145.0, 365.0], 'confidence': 0.8695589303970337, 'class': 'boats'}, {'box': [427.0, 413.0, 504.0, 441.0], 'confidence': 0.8631384968757629, 'class': 'boats'}, {'box': [285.0, 638.0, 360.0, 688.0], 'confidence': 0.8413400053977966, 'class': 'boats'}, {'box': [84.0, 412.0, 150.0, 484.0], 'confidence': 0.840884804725647, 'class': 'boats'}]}
+```
+
 ### Create and start a new build.
 
 ```
