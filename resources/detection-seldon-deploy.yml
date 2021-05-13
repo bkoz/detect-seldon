@@ -1,0 +1,22 @@
+apiVersion: machinelearning.seldon.io/v1
+kind: SeldonDeployment
+annotations:
+metadata:
+  name: detection
+spec:
+  name: mygroup
+  predictors:
+    - componentSpecs:
+      - spec:
+          containers:
+            - image: >-
+                image-registry.openshift-image-registry.svc:5000/ml-mon/detection
+              name: classifier
+      graph:
+        children: []
+        endpoint:
+          type: REST
+        name: classifier
+        type: MODEL
+      name: redhat
+      replicas: 1

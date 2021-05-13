@@ -1,0 +1,5 @@
+seldon-core==1.7.0
+Flask
+yolov5==5.0.0
+gunicorn
+azure
