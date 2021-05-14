@@ -2,6 +2,7 @@ from Detection import *
 import numpy as np
 import requests
 import logging
+import time
 
 logging.basicConfig(level=logging.INFO)
 
@@ -48,12 +49,14 @@ logging.debug(f'img: shape = {img.shape}, dtype: {img.dtype}')
 #
 # Option 3
 #
+t0 = time.time()
 img_payload = {"data": {"ndarray": img.tolist()} }
+logging.info(f'Create payload: Elapsed time = {time.time() - t0}')
 
-print()
 response = requests.post(DETECTION_URL, json=img_payload)
+logging.info(f'Request: Elapsed time = {time.time() - t0}')
 print(f'rest_response: {response}')
 print(f'rest content:')
 print()
-print(response.content)
+print(response.json())
 
