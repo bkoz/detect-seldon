@@ -63,12 +63,12 @@ def preprocess(image_file, stride, imgsz):
 
     return img, imgsz0
 
-def new_preprocess(img_in, stride, imgsz):
+def new_preprocess(img, stride, imgsz):
     """ Prepare the input for inferencing. """
     # read image file
     # img = np.asarray(bytearray(image_file), dtype="uint8")
     # img = cv2.imdecode(img, 1)
-    img = img_in.astype(np.uint8)
+    # img = img_in.astype(np.uint8)
     imgsz0 = torch.Tensor(img.shape[:2])
 
     logging.debug(f'img: shape = {img.shape}, dtype: {img.dtype}')
@@ -142,7 +142,7 @@ class Detection:
         home = os.environ['HOME']
         weights = f'{home}/weights.pt'
         weights = f'./weights.pt'
-        logging.debug(f'pytorch version: {torch.__version__}')
+        logging.info(f'pytorch version: {torch.__version__}')
         logging.info(f'Loading model file: {weights}')
 
         IMGSZ = 704
@@ -152,7 +152,7 @@ class Detection:
         self._stride = stride
         self._imgsz = imgsz
         self._model_loaded = True
-        logging.info(f'Model loaded, stride = {stride}, image size = {imgsz}')
+        logging.info(f'Model {weights} loaded, stride = {stride}, image size = {imgsz}')
         pass
 
     def predict(self, X, features_names=None, **kwargs):
@@ -160,22 +160,27 @@ class Detection:
             self.load()
         logging.debug(f'predict(): input X, shape = {X.shape}, type = {type(X)}.')
         logging.debug(f'X: shape = {X.shape}, dtype: {X.dtype}')
-                
+        
         #
-        # Hardcoded prediction using test image.
+        # Insure the input is of type uint8 or OpenCV will crash.
+        #
+        img = X.astype(np.uint8)
+
+        #
+        # Hardcoded prediction using test image (for debugging).
         # 
-        filename = os.path.abspath('./boats.png')
-        img_bytes = open(filename, "rb").read()
-        img = np.asarray(bytearray(img_bytes), dtype="uint8")
-        img = cv2.imdecode(img, 1)
-        prediction = new_detect(img, self._model, self._stride, self._imgsz)
-        logging.debug(f'img: shape = {img.shape}, dtype: {img.dtype}')
-        logging.debug(f'predict(): hardcoded prediction: {prediction}')
+        # filename = os.path.abspath('./boats.png')
+        # img_bytes = open(filename, "rb").read()
+        # img = np.asarray(bytearray(img_bytes), dtype="uint8")
+        # img = cv2.imdecode(img, 1)
+        # prediction = new_detect(img, self._model, self._stride, self._imgsz)
+        # logging.debug(f'img: shape = {img.shape}, dtype: {img.dtype}')
+        # logging.debug(f'predict(): hardcoded prediction: {prediction}')
         
         #
         # Prediction using input X
         #
-        prediction = new_detect(X, self._model, self._stride, self._imgsz)
+        prediction = new_detect(img, self._model, self._stride, self._imgsz)
         logging.debug(f'predict(): RESTprediction: {prediction}')
 
         return prediction

@@ -5,7 +5,7 @@ import logging
 
 logging.basicConfig(level=logging.DEBUG)
 
-DETECTION_URL = 'http://detection-redhat-ml-mon.apps.ocp.2ff8.sandbox379.opentlc.com/api/v1.0/predictions'
+DETECTION_URL = 'http://detection-redhat-opendatahub.apps.ocp.a122.sandbox1172.opentlc.com/api/v1.0/predictions'
 # Load 720x1280x3 test image
 IMAGE = os.path.abspath('./boats.png')
 

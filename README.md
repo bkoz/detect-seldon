@@ -18,12 +18,12 @@ oc start-build detection --from-dir=. --follow
 
 ```
 
-Edit `detection-seldon-deploy.yaml` and change image url namespace to match the environment and deploy.
+Edit `detection-seldon-deploy.yaml` and change the image url namespace to match the environment and deploy.
 
 ```
 oc apply -f resources/detection-seldon-deploy.yaml
 
-oc expose svc <svc-name>
+oc expose svc detection-redhat
 ```
 
 To trigger a redeploy after a new build. This does not always work so the pod may have to be deleted.
@@ -32,11 +32,28 @@ To trigger a redeploy after a new build. This does not always work so the pod ma
 oc patch deployment <deployment-name> -p "{\"spec\": {\"template\": {\"metadata\": { \"labels\": {  \"redeploy\": \"$(date +%s)\"}}}}}"
 ```
 
-Testing the service.
+Testing the service. 
+
+Edit `01-test-detection.py` and change the `DETECTION_URL` to match your cluster.
 
 ```
-curl -X POST $(oc get route detection-redhat -o jsonpath='{.spec.host}')/api/v1.0/predictions -H 'Content-Type: application/json' -d '{ "data": { "ndarray": [[5.1, 3.5, 1.4, 0.2]] } }'
+python3 01-test-detection.py
+```
 
+The pod logs should report the model being loaded.
+
+```
+oc logs detection-redhat-0-classifier-7dd97547d5-skf6p classifier
+
+2021-05-14 16:54:59,483 - root:load:146 - INFO:  Loading model file: ./weights.pt
+Fusing layers...
+Fusing layers...
+2021-05-14 16:54:59,623 - yolov5.utils.torch_utils:model_info:225 - INFO:  Model Summary: 283 layers, 7255094 parameters, 0 gradients, 16.8 GFLOPS
+```
+
+Test the prometheus endpoint.
+
+```
 curl -X GET $(oc get route detection-redhat -o jsonpath='{.spec.host}')/prometheus
 ```
 
