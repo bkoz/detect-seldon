@@ -16,6 +16,7 @@ from yolov5.models.experimental import attempt_load
 from yolov5.utils.datasets import letterbox
 from yolov5.utils.general import check_img_size, non_max_suppression, scale_coords
 
+import logging
 
 # Model Parameters
 WEIGHTS = os.path.join(os.path.dirname(__file__), 'weights.pt')
@@ -62,6 +63,50 @@ def preprocess(image_file, stride, imgsz):
 
     return img, imgsz0
 
+def new_preprocess(img_in, stride, imgsz):
+    """ Prepare the input for inferencing. """
+    # read image file
+    # img = np.asarray(bytearray(image_file), dtype="uint8")
+    # img = cv2.imdecode(img, 1)
+    img = img_in.astype(np.uint8)
+    imgsz0 = torch.Tensor(img.shape[:2])
+
+    logging.debug(f'img: shape = {img.shape}, dtype: {img.dtype}')
+    logging.debug(f'calling letterbox(): imgsz = {imgsz}, stride = {stride}')
+    logging.debug(f'img: {img}')
+    # resize image
+    img = letterbox(img, imgsz, stride=stride)[0]
+    logging.debug(f'returned from letterbox()')
+    logging.debug(f'img: shape = {img.shape}, dtype: {img.dtype}')
+
+    # convert from BGR to RGB
+    img = img[:, :, ::-1].transpose(2, 0, 1)
+    img = np.ascontiguousarray(img)
+
+    # convert to tensor
+    img = torch.from_numpy(img).to(DEVICE)
+
+    # normalize RGB values to percentage
+    img = img.float() / 255.0
+    if img.ndimension() == 3:
+        img = img.unsqueeze(0)
+
+    return img, imgsz0
+
+def new_detect(img_file, model, stride, imgsz):
+    # preprocess image
+    logging.debug(f'img_file: shape = {img_file.shape}, dtype: {img_file.dtype}')
+    img, imgsz0 = new_preprocess(img_file, stride, imgsz)
+
+    # run inferencing
+    pred = model(img)[0]
+    pred = non_max_suppression(pred, CONF_THRESH, IOU_THRESH, NMS_CLASSES, agnostic=AGNOSTIC_NMS)[0]
+
+    # postprocess results
+    pred = postprocess(pred, imgsz0, img.shape[2:])
+
+    # return the results
+    return {'objects': pred}
 
 def postprocess(predictions, imgsz0, imgsz1):
     """ Convert class IDs to class names. """
@@ -94,18 +139,12 @@ class Detection:
         #
         # Load model from storage. Called by Seldon.
         #
-        # url = "https://koz.s3.amazonaws.com/models/3d_image_classification.h5"
         home = os.environ['HOME']
         weights = f'{home}/weights.pt'
         weights = f'./weights.pt'
-        print(f'********************* pytorch version: {torch.__version__} *************************')
-        print(f'*** Downloading model to {weights}')
-        print(f'********************* pytorch version: {torch.__version__} *************************')
+        logging.debug(f'pytorch version: {torch.__version__}')
+        logging.info(f'Loading model file: {weights}')
 
-        # receive = requests.get(url)
-
-        # with open(model_file,'wb') as f:
-        #     f.write(receive.content)
         IMGSZ = 704
         DEVICE = 'cpu'
         (model, stride, imgsz) = load_model(weights, DEVICE, IMGSZ)
@@ -113,14 +152,30 @@ class Detection:
         self._stride = stride
         self._imgsz = imgsz
         self._model_loaded = True
-        print(f'****** Model loaded, stride = {stride}, image size = {imgsz}')
+        logging.info(f'Model loaded, stride = {stride}, image size = {imgsz}')
         pass
 
-    def predict(self, X, features_names=None):
+    def predict(self, X, features_names=None, **kwargs):
         if not self._model_loaded:
             self.load()
-        print(f'******* predict() called, input X.shape = {X.shape}.')
-        img = os.path.abspath('./boats.png')
-        prediction = detect(X, self._model, self._stride, self._imgsz)
-        # prediction = detect(open(img, "rb").read(), self._model, self._stride, self._imgsz)
+        logging.debug(f'predict(): input X, shape = {X.shape}, type = {type(X)}.')
+        logging.debug(f'X: shape = {X.shape}, dtype: {X.dtype}')
+                
+        #
+        # Hardcoded prediction using test image.
+        # 
+        filename = os.path.abspath('./boats.png')
+        img_bytes = open(filename, "rb").read()
+        img = np.asarray(bytearray(img_bytes), dtype="uint8")
+        img = cv2.imdecode(img, 1)
+        prediction = new_detect(img, self._model, self._stride, self._imgsz)
+        logging.debug(f'img: shape = {img.shape}, dtype: {img.dtype}')
+        logging.debug(f'predict(): hardcoded prediction: {prediction}')
+        
+        #
+        # Prediction using input X
+        #
+        prediction = new_detect(X, self._model, self._stride, self._imgsz)
+        logging.debug(f'predict(): RESTprediction: {prediction}')
+
         return prediction
