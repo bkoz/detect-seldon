@@ -3,7 +3,7 @@ import numpy as np
 import requests
 import logging
 
-logging.basicConfig(level=logging.DEBUG)
+logging.basicConfig(level=logging.INFO)
 
 DETECTION_URL = 'http://detection-redhat-opendatahub.apps.ocp.a122.sandbox1172.opentlc.com/api/v1.0/predictions'
 # Load 720x1280x3 test image
@@ -21,19 +21,16 @@ logging.debug(f'img: shape = {img.shape}, dtype: {img.dtype}')
 #
 # Local test
 #
-d = Detection()
-d.load()
-# X = np.array(img_bytes)
-# response = d.predict(np.array([1]), np.array([1]))
-# response = d.predict(np.array(open(IMAGE, "rb").read()), np.array([1]))
-# local_response = d.predict(X, np.array([1]))
-local_response = d.predict(img, np.array([1]))
+# d = Detection()
+# d.load()
 
-print()
-print(f'local_response:')
-print()
-print(f'{local_response}')
-print()
+# local_response = d.predict(img, np.array([1]))
+
+# print()
+# print(f'local_response:')
+# print()
+# print(f'{local_response}')
+# print()
 
 #
 #  REST test
@@ -53,7 +50,6 @@ print()
 #
 img_payload = {"data": {"ndarray": img.tolist()} }
 
-#response = requests.post(DETECTION_URL, files={"image": open(IMAGE, "rb").read()}).json()
 print()
 response = requests.post(DETECTION_URL, json=img_payload)
 print(f'rest_response: {response}')

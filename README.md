@@ -59,12 +59,17 @@ curl -X GET $(oc get route detection-redhat -o jsonpath='{.spec.host}')/promethe
 
 ### Prometheus and Grafana configuration.
 
-Create a Grafana dashboard.
-
 Create a Prometheus data source.
+```
+oc apply -f resources/grafana-prometheus-datasource.yaml
+```
+
+Create a Grafana dashboard.
+```
+oc apply -f resources/prediction-analytics-seldon-core-1.2.2.yaml
+```
 
 Create a service monitor.
-
 ```
 oc apply -f resources/seldon-service-monitor.yml
 ```

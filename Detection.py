@@ -71,14 +71,9 @@ def new_preprocess(img, stride, imgsz):
     # img = img_in.astype(np.uint8)
     imgsz0 = torch.Tensor(img.shape[:2])
 
-    logging.debug(f'img: shape = {img.shape}, dtype: {img.dtype}')
-    logging.debug(f'calling letterbox(): imgsz = {imgsz}, stride = {stride}')
-    logging.debug(f'img: {img}')
     # resize image
     img = letterbox(img, imgsz, stride=stride)[0]
-    logging.debug(f'returned from letterbox()')
-    logging.debug(f'img: shape = {img.shape}, dtype: {img.dtype}')
-
+    
     # convert from BGR to RGB
     img = img[:, :, ::-1].transpose(2, 0, 1)
     img = np.ascontiguousarray(img)
